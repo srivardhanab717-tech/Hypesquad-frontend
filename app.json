@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "HypeSquad",
+    "slug": "hypesquad",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.hypesquad.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.hypesquad.app"
+    },
+    "extra": {
+      "apiBaseUrl": "https://<your-deployed-backend-url>",
+      "supabaseUrl": "https://<project>.supabase.co",
+      "supabaseAnonKey": "<publishable key — NEVER the secret key>"
+    }
+  }
+}
