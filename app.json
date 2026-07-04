@@ -24,9 +24,9 @@
       "package": "com.hypesquad.app"
     },
     "extra": {
-      "apiBaseUrl": "https://<your-deployed-backend-url>",
-      "supabaseUrl": "https://<project>.supabase.co",
-      "supabaseAnonKey": "<publishable key — NEVER the secret key>"
+      "apiBaseUrl": "https://hypesquad-bd-production.up.railway.app",
+      "supabaseUrl": "https://evsxybgaoqcbonxnrelj.supabase.co",
+      "supabaseAnonKey": "sb_publishable_EHyF2-aeD8cs5TXQcnLeiA_BkbfDIJW"
     }
   }
 }
