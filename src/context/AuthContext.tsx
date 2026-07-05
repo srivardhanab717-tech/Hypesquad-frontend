@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { registerPushToken } from '../lib/push';
-import { SKIP_AUTH, MOCK_USER } from '../config/dev';
+import { SKIP_AUTH, MOCK_AUTH, MOCK_USER } from '../config/dev';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -25,9 +25,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const signIn = (_token: string) => {
-    setState({ isAuthenticated: true, needsSetup: true, isLoading: false });
-    // Register push token on sign-in
-    registerPushToken();
+    if (MOCK_AUTH || SKIP_AUTH) {
+      // Mock mode: skip setup, go straight to main app
+      setState({ isAuthenticated: true, needsSetup: false, isLoading: false });
+    } else {
+      setState({ isAuthenticated: true, needsSetup: true, isLoading: false });
+      registerPushToken();
+    }
   };
 
   const signOut = () => {
@@ -39,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Derive user from state
-  const user = state.isAuthenticated ? (SKIP_AUTH ? MOCK_USER : null) : null;
+  const user = state.isAuthenticated ? ((SKIP_AUTH || MOCK_AUTH) ? MOCK_USER : null) : null;
 
   // Register push token on app open when already authenticated
   useEffect(() => {
