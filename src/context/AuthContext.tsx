@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { registerPushToken } from '../lib/push';
+import { SKIP_AUTH, MOCK_USER } from '../config/dev';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -11,16 +12,17 @@ interface AuthContextValue extends AuthState {
   signIn: (token: string) => void;
   signOut: () => void;
   completeSetup: () => void;
+  user: typeof MOCK_USER | null;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>({
-    isAuthenticated: false,
-    needsSetup: false,
-    isLoading: false,
-  });
+  const [state, setState] = useState<AuthState>(
+    SKIP_AUTH
+      ? { isAuthenticated: true, needsSetup: false, isLoading: false }
+      : { isAuthenticated: false, needsSetup: false, isLoading: false },
+  );
 
   const signIn = (_token: string) => {
     setState({ isAuthenticated: true, needsSetup: true, isLoading: false });
@@ -36,15 +38,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, needsSetup: false }));
   };
 
+  // Derive user from state
+  const user = state.isAuthenticated ? (SKIP_AUTH ? MOCK_USER : null) : null;
+
   // Register push token on app open when already authenticated
   useEffect(() => {
-    if (state.isAuthenticated) {
+    if (state.isAuthenticated && !SKIP_AUTH) {
       registerPushToken();
     }
   }, [state.isAuthenticated]);
 
   return (
-    <AuthContext.Provider value={{ ...state, signIn, signOut, completeSetup }}>
+    <AuthContext.Provider value={{ ...state, signIn, signOut, completeSetup, user }}>
       {children}
     </AuthContext.Provider>
   );
