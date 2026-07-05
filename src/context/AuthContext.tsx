@@ -1,59 +1,68 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { registerPushToken } from '../lib/push';
-import { SKIP_AUTH, MOCK_AUTH, MOCK_USER } from '../config/dev';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-interface AuthState {
+// ---------------------------------------------------------------------------
+// Hardcoded mock user for testing (no real auth)
+// ---------------------------------------------------------------------------
+
+const MOCK_USER = {
+  id: 'test-user',
+  name: 'Test User',
+  handle: 'testuser',
+  bio: 'This is a test account for development.',
+  avatar_color: '#FF6B35',
+  streak: 7,
+  post_count: 12,
+  follower_count: 42,
+  following_count: 18,
+};
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface AuthContextValue {
   isAuthenticated: boolean;
   needsSetup: boolean;
   isLoading: boolean;
-}
-
-interface AuthContextValue extends AuthState {
   signIn: (token: string) => void;
   signOut: () => void;
   completeSetup: () => void;
-  user: typeof MOCK_USER | null;
+  user: typeof MOCK_USER;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+// ---------------------------------------------------------------------------
+// Provider — always authenticated with mock user
+// ---------------------------------------------------------------------------
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>(
-    SKIP_AUTH
-      ? { isAuthenticated: true, needsSetup: false, isLoading: false }
-      : { isAuthenticated: false, needsSetup: false, isLoading: false },
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
 
   const signIn = (_token: string) => {
-    if (MOCK_AUTH || SKIP_AUTH) {
-      // Mock mode: skip setup, go straight to main app
-      setState({ isAuthenticated: true, needsSetup: false, isLoading: false });
-    } else {
-      setState({ isAuthenticated: true, needsSetup: true, isLoading: false });
-      registerPushToken();
-    }
+    setIsAuthenticated(true);
   };
 
   const signOut = () => {
-    setState({ isAuthenticated: false, needsSetup: false, isLoading: false });
+    setIsAuthenticated(false);
   };
 
   const completeSetup = () => {
-    setState((prev) => ({ ...prev, needsSetup: false }));
+    // No-op in test mode
   };
 
-  // Derive user from state
-  const user = state.isAuthenticated ? ((SKIP_AUTH || MOCK_AUTH) ? MOCK_USER : null) : null;
-
-  // Register push token on app open when already authenticated
-  useEffect(() => {
-    if (state.isAuthenticated && !SKIP_AUTH) {
-      registerPushToken();
-    }
-  }, [state.isAuthenticated]);
-
   return (
-    <AuthContext.Provider value={{ ...state, signIn, signOut, completeSetup, user }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        needsSetup: false,
+        isLoading: false,
+        signIn,
+        signOut,
+        completeSetup,
+        user: MOCK_USER,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
