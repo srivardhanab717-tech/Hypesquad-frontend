@@ -29,6 +29,8 @@ import { MOCK_AUTH } from '../config/dev';
 type AuthStep = 'phone' | 'otp';
 
 export function AuthScreen() {
+  console.log('[AuthScreen] MOCK_AUTH =', MOCK_AUTH);
+
   const { theme } = useTheme();
   const { signIn } = useAuth();
 
@@ -39,76 +41,71 @@ export function AuthScreen() {
   const [error, setError] = useState<string | null>(null);
 
   // --- Phone step: request OTP ---
-  const handleRequestOtp = async () => {
+  const handleRequestOtp = () => {
     if (MOCK_AUTH) {
       signIn('mock');
       return;
     }
-
-    if (!phone.trim()) {
-      setError('Please enter your phone number');
-      return;
-    }
-
-    setError(null);
-    setLoading(true);
-    try {
-      await api.auth.requestOtp(phone.trim());
-      setStep('otp');
-    } catch (err: any) {
-      setError(err?.message ?? 'Failed to send OTP. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    // Real implementation (only runs when MOCK_AUTH is false)
+    (async () => {
+      if (!phone.trim()) {
+        setError('Please enter your phone number');
+        return;
+      }
+      setError(null);
+      setLoading(true);
+      try {
+        await api.auth.requestOtp(phone.trim());
+        setStep('otp');
+      } catch (err: any) {
+        setError(err?.message ?? 'Failed to send OTP. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    })();
   };
 
   // --- OTP step: verify code ---
-  const handleVerifyOtp = async () => {
+  const handleVerifyOtp = () => {
     if (MOCK_AUTH) {
       signIn('mock');
       return;
     }
-
-    if (otpCode.length !== 6) {
-      setError('Please enter the 6-digit code');
-      return;
-    }
-
-    setError(null);
-    setLoading(true);
-    try {
-      await api.auth.verifyOtp(phone.trim(), otpCode);
-      // On success, Supabase onAuthStateChange in AuthContext will
-      // automatically update auth state and trigger navigation.
-    } catch (err: any) {
-      setError(err?.message ?? 'Invalid code. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    (async () => {
+      if (otpCode.length !== 6) {
+        setError('Please enter the 6-digit code');
+        return;
+      }
+      setError(null);
+      setLoading(true);
+      try {
+        await api.auth.verifyOtp(phone.trim(), otpCode);
+      } catch (err: any) {
+        setError(err?.message ?? 'Invalid code. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    })();
   };
 
   // --- OAuth sign-in ---
-  const handleOAuth = async (provider: 'google' | 'apple') => {
+  const handleOAuth = (provider: 'google' | 'apple') => {
     if (MOCK_AUTH) {
       signIn('mock');
       return;
     }
-
-    setError(null);
-    setLoading(true);
-    try {
-      // In production, the id_token would come from the native
-      // Google/Apple sign-in SDK. For now, this serves as the
-      // wiring point — the actual token acquisition is handled
-      // by the respective platform SDK integration.
-      const payload: OAuthPayload = { id_token: '' };
-      await api.auth.oauth(provider, payload);
-      // On success, Supabase onAuthStateChange handles the rest.
-    } catch (err: any) {
-      setError(err?.message ?? `${provider} sign-in failed. Please try again.`);
-    } finally {
-      setLoading(false);
-    }
+    (async () => {
+      setError(null);
+      setLoading(true);
+      try {
+        const payload: OAuthPayload = { id_token: '' };
+        await api.auth.oauth(provider, payload);
+      } catch (err: any) {
+        setError(err?.message ?? `${provider} sign-in failed. Please try again.`);
+      } finally {
+        setLoading(false);
+      }
+    })();
   };
 
   return (
