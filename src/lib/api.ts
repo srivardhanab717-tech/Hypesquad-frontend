@@ -1,11 +1,15 @@
 import Constants from 'expo-constants';
 import { supabase } from './supabase';
+import { SKIP_AUTH } from '../config/dev';
 
 // ---------- Config ----------
 const apiBaseUrl = Constants.expoConfig?.extra?.apiBaseUrl as string;
 
 // ---------- Token + sign-out helpers ----------
 async function getAccessToken(): Promise<string | null> {
+  if (SKIP_AUTH) {
+    return 'mock-token-for-testing';
+  }
   const { data } = await supabase.auth.getSession();
   return data.session?.access_token ?? null;
 }
