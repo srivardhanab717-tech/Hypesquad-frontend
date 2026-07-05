@@ -1,13 +1,21 @@
 /**
  * Development configuration flags.
- * Set SKIP_AUTH = true to bypass the entire authentication flow
- * and go straight to the main app with a mock user.
- * Set back to false to restore normal authentication.
+ *
+ * SKIP_AUTH = true  → bypass auth screen entirely (app opens straight to Home)
+ * SKIP_AUTH = false → show auth screen, but all sign-in actions instantly authenticate
+ *                     using MOCK_USER (no real network calls)
  */
-export const SKIP_AUTH = true;
+export const SKIP_AUTH = false;
 
 /**
- * Mock user object used when SKIP_AUTH is true.
+ * When true, tapping any sign-in button on the AuthScreen will immediately
+ * authenticate as MOCK_USER without making any network requests.
+ * Set to false to use real OTP/OAuth authentication.
+ */
+export const MOCK_AUTH = true;
+
+/**
+ * Mock user object used when SKIP_AUTH or MOCK_AUTH is true.
  * Provides fake data so screens expecting a current user don't crash.
  */
 export const MOCK_USER = {

@@ -11,7 +11,9 @@ import {
   ScrollView,
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import { api, OAuthPayload } from '../lib/api';
+import { MOCK_AUTH } from '../config/dev';
 
 /**
  * AuthScreen
@@ -28,6 +30,7 @@ type AuthStep = 'phone' | 'otp';
 
 export function AuthScreen() {
   const { theme } = useTheme();
+  const { signIn } = useAuth();
 
   const [step, setStep] = useState<AuthStep>('phone');
   const [phone, setPhone] = useState('');
@@ -37,6 +40,11 @@ export function AuthScreen() {
 
   // --- Phone step: request OTP ---
   const handleRequestOtp = async () => {
+    if (MOCK_AUTH) {
+      signIn('mock');
+      return;
+    }
+
     if (!phone.trim()) {
       setError('Please enter your phone number');
       return;
@@ -56,6 +64,11 @@ export function AuthScreen() {
 
   // --- OTP step: verify code ---
   const handleVerifyOtp = async () => {
+    if (MOCK_AUTH) {
+      signIn('mock');
+      return;
+    }
+
     if (otpCode.length !== 6) {
       setError('Please enter the 6-digit code');
       return;
@@ -76,6 +89,11 @@ export function AuthScreen() {
 
   // --- OAuth sign-in ---
   const handleOAuth = async (provider: 'google' | 'apple') => {
+    if (MOCK_AUTH) {
+      signIn('mock');
+      return;
+    }
+
     setError(null);
     setLoading(true);
     try {
