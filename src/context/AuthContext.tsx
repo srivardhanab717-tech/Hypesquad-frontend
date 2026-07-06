@@ -1,54 +1,86 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-
-// ---------------------------------------------------------------------------
-// Hardcoded mock user for testing (no real auth)
-// ---------------------------------------------------------------------------
-
-const MOCK_USER = {
-  id: 'test-user',
-  name: 'Test User',
-  handle: 'testuser',
-  bio: 'This is a test account for development.',
-  avatar_color: '#FF6B35',
-  streak: 7,
-  post_count: 12,
-  follower_count: 42,
-  following_count: 18,
-};
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
+interface User {
+  id: string;
+  name: string;
+  handle: string;
+  bio?: string;
+  avatar_color?: string;
+  streak?: number;
+  post_count?: number;
+  follower_count?: number;
+  following_count?: number;
+}
 
 interface AuthContextValue {
   isAuthenticated: boolean;
   needsSetup: boolean;
   isLoading: boolean;
-  signIn: (token: string) => void;
-  signOut: () => void;
+  token: string | null;
+  signIn: (token: string, user?: User) => Promise<void>;
+  signOut: () => Promise<void>;
   completeSetup: () => void;
-  user: typeof MOCK_USER;
+  user: User | null;
 }
+
+const TOKEN_KEY = 'auth_token';
+const USER_KEY = 'auth_user';
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 // ---------------------------------------------------------------------------
-// Provider — always authenticated with mock user
+// Provider — loads persisted token on mount, persists on sign in/out
 // ---------------------------------------------------------------------------
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
-  const signIn = (_token: string) => {
+  // On app start, check if a token was already saved from a previous session
+  useEffect(() => {
+    (async () => {
+      try {
+        const [storedToken, storedUser] = await Promise.all([
+          AsyncStorage.getItem(TOKEN_KEY),
+          AsyncStorage.getItem(USER_KEY),
+        ]);
+        if (storedToken) {
+          setToken(storedToken);
+          setIsAuthenticated(true);
+          if (storedUser) setUser(JSON.parse(storedUser));
+        }
+      } catch (err) {
+        console.error('Failed to load persisted auth state', err);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  }, []);
+
+  const signIn = async (newToken: string, newUser?: User) => {
+    await AsyncStorage.setItem(TOKEN_KEY, newToken);
+    if (newUser) {
+      await AsyncStorage.setItem(USER_KEY, JSON.stringify(newUser));
+      setUser(newUser);
+    }
+    setToken(newToken);
     setIsAuthenticated(true);
   };
 
-  const signOut = () => {
+  const signOut = async () => {
+    await AsyncStorage.multiRemove([TOKEN_KEY, USER_KEY]);
+    setToken(null);
+    setUser(null);
     setIsAuthenticated(false);
   };
 
   const completeSetup = () => {
-    // No-op in test mode
+    // No-op for now — hook up real setup-completion logic here if needed
   };
 
   return (
@@ -56,11 +88,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         isAuthenticated,
         needsSetup: false,
-        isLoading: false,
+        isLoading,
+        token,
         signIn,
         signOut,
         completeSetup,
-        user: MOCK_USER,
+        user,
       }}
     >
       {children}
