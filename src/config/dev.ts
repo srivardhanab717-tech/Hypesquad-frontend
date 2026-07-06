@@ -6,14 +6,12 @@
  *                     using MOCK_USER (no real network calls)
  */
 export const SKIP_AUTH = false;
-
 /**
  * When true, tapping any sign-in button on the AuthScreen will immediately
  * authenticate as MOCK_USER without making any network requests.
  * Set to false to use real OTP/OAuth authentication.
  */
 export const MOCK_AUTH = false;
-
 /**
  * Mock user object used when SKIP_AUTH or MOCK_AUTH is true.
  * Provides fake data so screens expecting a current user don't crash.
