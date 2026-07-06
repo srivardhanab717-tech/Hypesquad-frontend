@@ -12,7 +12,7 @@ export const SKIP_AUTH = false;
  * authenticate as MOCK_USER without making any network requests.
  * Set to false to use real OTP/OAuth authentication.
  */
-export const MOCK_AUTH = true;
+export const MOCK_AUTH = flase;
 
 /**
  * Mock user object used when SKIP_AUTH or MOCK_AUTH is true.
