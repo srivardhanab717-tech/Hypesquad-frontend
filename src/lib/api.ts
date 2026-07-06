@@ -10,7 +10,11 @@ async function getAccessToken(): Promise<string | null> {
 }
 
 async function signOut(): Promise<void> {
-  await supabase.auth.signOut();
+  try {
+    await supabase.auth.signOut();
+  } catch {
+    // Supabase client may be a stub — don't crash
+  }
 }
 
 // ---------- Base HTTP helpers ----------
