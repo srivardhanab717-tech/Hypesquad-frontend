@@ -8,10 +8,11 @@ const apiBaseUrl = Constants.expoConfig?.extra?.apiBaseUrl as string;
 
 // ---------- Token + sign-out helpers ----------
 async function getAccessToken(): Promise<string | null> {
-  return 'mock-token-for-testing';
+  return AsyncStorage.getItem('auth_token');
 }
 
 async function signOut(): Promise<void> {
+  await AsyncStorage.multiRemove(['auth_token', 'auth_user']);
   await supabase.auth.signOut();
 }
 
